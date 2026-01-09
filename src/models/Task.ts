@@ -2,7 +2,7 @@ import mongoose, { Schema, Document, Model } from 'mongoose';
 
 export interface ITask extends Document {
   name: string;
-  description: string;
+  description?: string;
   dateCreated: Date;
   userId: string;
 }
@@ -15,7 +15,7 @@ const TaskSchema: Schema = new Schema({
   },
   description: {
     type: String,
-    required: [true, 'Please provide a description for this task.'],
+    required: false,
   },
   dateCreated: {
     type: Date,
@@ -25,6 +25,10 @@ const TaskSchema: Schema = new Schema({
     type: String,
     required: true,
     index: true,
+  },
+  completed: {
+    type: Boolean,
+    default: false,
   },
 });
 

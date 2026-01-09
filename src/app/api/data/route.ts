@@ -32,7 +32,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'No device ID found' }, { status: 400 });
     }
 
-    if (!body.name || !body.description) {
+    if (!body.name) {
       return NextResponse.json({ error: 'Faltan campos requeridos' }, { status: 400 });
     }
 

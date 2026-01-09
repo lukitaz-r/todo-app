@@ -68,8 +68,8 @@ export default function ConfirmationModal({
   };
 
   const handleAdd = async () => {
-    if (!newName || !newDescription) {
-      setError('Name and description are required');
+    if (!newName) {
+      setError('Name is required');
       return;
     }
     setLoading(true);
@@ -88,8 +88,8 @@ export default function ConfirmationModal({
   };
 
   const handleEditInternal = async () => {
-    if (!newName || !newDescription) {
-      setError('Name and description are required');
+    if (!newName) {
+      setError('Name is required');
       return;
     }
     if (!onEdit) return;
@@ -126,8 +126,11 @@ export default function ConfirmationModal({
       <div
         className={`${styles.modalContent} ${(isCreateTask || isEditTask) ? styles.modalContentCreateTask : ''} ${isClosing ? styles.modalContentClosing : ''}`}
         onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="confirmation-modal-title"
       >
-        <h2 className={styles.modalTitle}>{title}</h2>
+        <h2 id="confirmation-modal-title" className={styles.modalTitle}>{title}</h2>
         <p className={styles.modalMessage}>{message}</p>
         {error && <p style={{ color: 'red', marginBottom: '0.5rem' }}>{error}</p>}
         <div className={styles.modalInputs}>
