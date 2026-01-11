@@ -36,6 +36,9 @@ export default function ConfirmationModal({
 
   const dispatch = useDispatch<AppDispatch>();
 
+  // Updated button base styles
+  const modalButton = 'px-4 py-2 rounded-lg border-none cursor-pointer font-bold transition-all duration-200 ease-linear flex items-center justify-center text-sm sm:text-base';
+
   useEffect(() => {
     if (isOpen) {
       setShouldRender(true);
@@ -120,56 +123,73 @@ export default function ConfirmationModal({
 
   return (
     <div
-      className={`${styles.modalOverlay} ${isClosing ? styles.modalOverlayClosing : ''}`}
+      className={`fixed inset-0 flex justify-center items-center z-1000 backdrop-blur-sm w-full h-full bg-black/50 p-4 ${isClosing ? 'animate-[fadeOut_0.3s_ease-in_forwards]' : 'animate-[fadeIn_0.3s_ease-out_forwards]'}`}
       onClick={handleClose}
     >
       <div
-        className={`${styles.modalContent} ${(isCreateTask || isEditTask) ? styles.modalContentCreateTask : ''} ${isClosing ? styles.modalContentClosing : ''}`}
+        className={`w-full bg-white p-6 rounded-xl shadow-2xl max-h-[85vh] overflow-y-auto border border-gray-200 ${(isCreateTask || isEditTask) ? 'max-w-md' : 'max-w-sm'} ${isClosing ? 'animate-[scaleOut_0.3s_ease-in_forwards]' : 'animate-[scaleIn_0.3s_ease-out_forwards]'}`}
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
         aria-labelledby="confirmation-modal-title"
       >
-        <h2 id="confirmation-modal-title" className={styles.modalTitle}>{title}</h2>
-        <p className={styles.modalMessage}>{message}</p>
-        {error && <p style={{ color: 'red', marginBottom: '0.5rem' }}>{error}</p>}
-        <div className={styles.modalInputs}>
+        <h2 id="confirmation-modal-title" className='mb-3 text-xl font-bold text-gray-800 text-center'>{title}</h2>
+        <p className={`mb-6 text-base text-gray-600 text-center leading-relaxed`}>{message}</p>
+
+        {error && <p className={`text-red-500 mb-4 text-sm text-center font-medium`}>{error}</p>}
+
+        <div className={`flex flex-col gap-4 mb-6`}>
           {(isCreateTask || isEditTask) ? (
             <>
-              <input
-                type="text"
-                placeholder="Name"
-                value={newName}
-                onChange={(e) => setNewName(e.target.value)}
-                className={styles.inputCreateTask + ' ' + styles.inputName}
-                disabled={loading}
-              />
-              <textarea
-                placeholder="Description"
-                value={newDescription}
-                onChange={(e) => setNewDescription(e.target.value)}
-                className={styles.inputCreateTask + ' ' + styles.inputDescription}
-                disabled={loading}
-              />
+              <div className="flex flex-col gap-1">
+                <input
+                  type="text"
+                  placeholder="Task Name"
+                  value={newName}
+                  onChange={(e) => setNewName(e.target.value)}
+                  className={'w-full p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent transition-all shadow-sm'}
+                  disabled={loading}
+                  autoFocus
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <textarea
+                  placeholder="Description (Optional)"
+                  value={newDescription}
+                  onChange={(e) => setNewDescription(e.target.value)}
+                  className={'w-full min-h-[100px] max-h-[200px] resize-y p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent transition-all shadow-sm'}
+                  disabled={loading}
+                />
+              </div>
             </>
           ) : ''}
         </div>
 
 
-        <div className={styles.modalActions}>
+        <div className={`flex justify-center gap-3 w-full`}>
           <button
-            className={`${styles.modalButton} ${styles.cancelButton}`}
+            className={`${modalButton} bg-gray-100 active:cursor-default text-gray-700 hover:bg-gray-200 w-full sm:w-auto flex-1`}
             onClick={handleClose}
             disabled={loading}
+            type="button"
           >
             Cancel
           </button>
           <button
-            className={`${styles.modalButton} ${(isCreateTask || isEditTask) ? styles.confirmTaskButton : styles.confirmEraseButton}`}
+            className={`${modalButton} ${(isCreateTask || isEditTask) ? 'bg-blue-600 text-white hover:bg-blue-700 hover:filter-[brightness(0.9)] hover:cursor-pointer active:cursor-default' : 'bg-red-600 text-white hover:bg-red-700 hover:cursor-pointer active:cursor-default'} w-full sm:w-auto flex-1 disabled:opacity-70 disabled:cursor-not-allowed shadow-sm`}
             onClick={handleConfirm}
             disabled={loading}
+            type="button"
           >
-            {loading ? 'Processing...' : (isEditTask ? 'Save' : 'Confirm')}
+            {loading ? (
+              <span className="flex items-center gap-2">
+                <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Processing...
+              </span>
+            ) : (isEditTask ? 'Save Changes' : (isCreateTask ? 'Create Task' : 'Confirm'))}
           </button>
         </div>
       </div>

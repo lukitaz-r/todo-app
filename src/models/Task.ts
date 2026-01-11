@@ -32,7 +32,6 @@ const TaskSchema: Schema = new Schema({
   },
 });
 
-// Check if the model is already compiled to prevent OverwriteModelError
 const Task: Model<ITask> = mongoose.models.Task || mongoose.model<ITask>('Task', TaskSchema);
 
 export default Task;
