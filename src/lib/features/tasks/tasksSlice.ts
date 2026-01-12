@@ -59,11 +59,12 @@ export const addTask = createAsyncThunk('tasks/addTask', async (newTask: Omit<Ta
         }
       }
     } catch (e) {
-      // Ignore reading error
+      // Ignore reading body error
     }
     throw new Error(errorMessage);
   }
-  
+
+
   const data = await response.json();
   return data as Task;
 });
@@ -115,6 +116,10 @@ export const deleteAllTasks = createAsyncThunk('tasks/deleteAllTasks', async () 
   return;
 });
 
+/**
+ * Reducer for tasks state.
+ * Reductor para el estado de las tareas.
+ */
 const tasksSlice = createSlice({
   name: 'tasks',
   initialState,
