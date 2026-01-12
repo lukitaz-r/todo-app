@@ -13,6 +13,10 @@ const initialState: TasksState = {
   error: null,
 };
 
+/**
+ * Fetches all tasks associated with the current user/device.
+ * Obtiene todas las tareas asociadas con el usuario/dispositivo actual.
+ */
 export const fetchTasks = createAsyncThunk('tasks/fetchTasks', async () => {
   const response = await fetch('/api/data');
   if (!response.ok) {
@@ -22,6 +26,10 @@ export const fetchTasks = createAsyncThunk('tasks/fetchTasks', async () => {
   return data as Task[];
 });
 
+/**
+ * Adds a new task. Includes specific error handling for Rate Limiting (429).
+ * Añade una nueva tarea. Incluye manejo de errores específico para Límite de Velocidad (429).
+ */
 export const addTask = createAsyncThunk('tasks/addTask', async (newTask: Omit<Task, 'id' | 'dateCreated'>) => {
   const response = await fetch('/api/data', {
     method: 'POST',
@@ -30,13 +38,40 @@ export const addTask = createAsyncThunk('tasks/addTask', async (newTask: Omit<Ta
     },
     body: JSON.stringify(newTask),
   });
+
   if (!response.ok) {
-    throw new Error('Failed to add task');
+    let errorMessage = `Error: ${response.status} ${response.statusText}`;
+    try {
+      // Try to parse JSON error message from server (e.g., rate limit)
+      // Intentar parsear mensaje de error JSON del servidor (ej. límite de velocidad)
+      const errorText = await response.clone().text();
+      try {
+        const errorJson = JSON.parse(errorText);
+        if (errorJson.error) {
+          errorMessage = errorJson.error;
+        } else if (errorJson.message) {
+          errorMessage = errorJson.message;
+        }
+      } catch {
+        // Fallback to raw text if not JSON
+        if (errorText && errorText.length < 200) {
+          errorMessage = errorText;
+        }
+      }
+    } catch (e) {
+      // Ignore reading error
+    }
+    throw new Error(errorMessage);
   }
+  
   const data = await response.json();
   return data as Task;
 });
 
+/**
+ * Updates an existing task.
+ * Actualiza una tarea existente.
+ */
 export const updateTask = createAsyncThunk('tasks/updateTask', async (task: Task) => {
   const response = await fetch('/api/data', {
     method: 'PUT',
@@ -52,6 +87,10 @@ export const updateTask = createAsyncThunk('tasks/updateTask', async (task: Task
   return data as Task;
 });
 
+/**
+ * Deletes a single task by ID.
+ * Elimina una única tarea por ID.
+ */
 export const deleteTask = createAsyncThunk('tasks/deleteTask', async (id: string) => {
   const response = await fetch(`/api/data?id=${id}`, {
     method: 'DELETE',
@@ -62,6 +101,10 @@ export const deleteTask = createAsyncThunk('tasks/deleteTask', async (id: string
   return id;
 });
 
+/**
+ * Deletes all tasks for the current user.
+ * Elimina todas las tareas del usuario actual.
+ */
 export const deleteAllTasks = createAsyncThunk('tasks/deleteAllTasks', async () => {
   const response = await fetch('/api/data', {
     method: 'DELETE',

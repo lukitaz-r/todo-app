@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 
 interface ViewTaskModalProps {
   isOpen: boolean;
@@ -15,6 +16,11 @@ export default function ViewTaskModal({
 }: ViewTaskModalProps) {
   const [isClosing, setIsClosing] = useState(false);
   const [shouldRender, setShouldRender] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (isOpen) {
@@ -29,11 +35,11 @@ export default function ViewTaskModal({
     }
   }, [isOpen]);
 
-  if (!shouldRender) return null;
+  if (!mounted || !shouldRender) return null;
 
-  return (
+  return createPortal(
     <div
-      className={`fixed inset-0 flex justify-center items-center z-1000 backdrop-blur-sm w-full h-full bg-black/50 p-4 ${isClosing ? 'animate-[fadeOut_0.3s_ease-in_forwards]' : 'animate-[fadeIn_0.3s_ease-out_forwards]'}`}
+      className={`fixed inset-0 flex justify-center items-center z-[9999] backdrop-blur-sm w-full h-full bg-black/50 p-4 ${isClosing ? 'animate-[fadeOut_0.3s_ease-in_forwards]' : 'animate-[fadeIn_0.3s_ease-out_forwards]'}`}
       onClick={onClose}
     >
       <div
@@ -57,6 +63,7 @@ export default function ViewTaskModal({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

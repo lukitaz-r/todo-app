@@ -1,6 +1,6 @@
 import { useDispatch } from 'react-redux';
-import styles from '../css/page.module.css';
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { AppDispatch } from '@/lib/store';
 import { addTask } from '@/lib/features/tasks/tasksSlice';
 
@@ -29,6 +29,7 @@ export default function ConfirmationModal({
 }: ConfirmationModalProps) {
   const [isClosing, setIsClosing] = useState(false);
   const [shouldRender, setShouldRender] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const [newName, setNewName] = useState('');
   const [newDescription, setNewDescription] = useState('');
   const [loading, setLoading] = useState(false);
@@ -38,6 +39,10 @@ export default function ConfirmationModal({
 
   // Updated button base styles
   const modalButton = 'px-4 py-2 rounded-lg border-none cursor-pointer font-bold transition-all duration-200 ease-linear flex items-center justify-center text-sm sm:text-base';
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (isOpen) {
@@ -59,7 +64,7 @@ export default function ConfirmationModal({
     }
   }, [isOpen, isEditTask, initialData]);
 
-  if (!shouldRender) return null;
+  if (!mounted || !shouldRender) return null;
 
   const handleClose = () => {
     if (isCreateTask || isEditTask) {
@@ -83,7 +88,14 @@ export default function ConfirmationModal({
       setNewDescription('');
       onClose();
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Error adding item';
+      let message = 'Error adding item';
+      if (err instanceof Error) {
+        message = err.message;
+      } else if (typeof err === 'object' && err !== null && 'message' in err) {
+        message = (err as { message: string }).message;
+      } else if (typeof err === 'string') {
+        message = err;
+      }
       setError(message);
     } finally {
       setLoading(false);
@@ -103,7 +115,14 @@ export default function ConfirmationModal({
       await onEdit({ name: newName, description: newDescription });
       onClose();
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Error editing item';
+      let message = 'Error editing item';
+      if (err instanceof Error) {
+        message = err.message;
+      } else if (typeof err === 'object' && err !== null && 'message' in err) {
+        message = (err as { message: string }).message;
+      } else if (typeof err === 'string') {
+        message = err;
+      }
       setError(message);
     } finally {
       setLoading(false);
@@ -121,9 +140,9 @@ export default function ConfirmationModal({
     }
   };
 
-  return (
+  return createPortal(
     <div
-      className={`fixed inset-0 flex justify-center items-center z-1000 backdrop-blur-sm w-full h-full bg-black/50 p-4 ${isClosing ? 'animate-[fadeOut_0.3s_ease-in_forwards]' : 'animate-[fadeIn_0.3s_ease-out_forwards]'}`}
+      className={`fixed inset-0 flex justify-center items-center z-[9999] backdrop-blur-sm w-full h-full bg-black/50 p-4 ${isClosing ? 'animate-[fadeOut_0.3s_ease-in_forwards]' : 'animate-[fadeIn_0.3s_ease-out_forwards]'}`}
       onClick={handleClose}
     >
       <div
@@ -136,7 +155,16 @@ export default function ConfirmationModal({
         <h2 id="confirmation-modal-title" className='mb-3 text-xl font-bold text-gray-800 text-center'>{title}</h2>
         <p className={`mb-6 text-base text-gray-600 text-center leading-relaxed`}>{message}</p>
 
-        {error && <p className={`text-red-500 mb-4 text-sm text-center font-medium`}>{error}</p>}
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg mb-6 flex items-center gap-3 animate-[scaleIn_0.2s_ease-out_forwards]">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="8" x2="12" y2="12"></line>
+              <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+            <p className="text-sm font-medium leading-tight">{error}</p>
+          </div>
+        )}
 
         <div className={`flex flex-col gap-4 mb-6`}>
           {(isCreateTask || isEditTask) ? (
@@ -193,6 +221,7 @@ export default function ConfirmationModal({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
